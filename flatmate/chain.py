@@ -52,6 +52,7 @@ class Chain:
             self.callbacks = list(funcs) + self.callbacks
         else:
             self.callbacks.extend(funcs)
+        return self
 
 def eventHandled(_, event):
     return event.handled

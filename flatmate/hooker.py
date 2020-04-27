@@ -42,6 +42,12 @@ class HookerBase:
         namespace.update(self.chains)
         return namespace
 
+    def __call__(self, func):
+        """Decorator for registering a function based on its name"""
+        c = self.chains[func.__name__]
+        c.attach(func)
+        return c
+
     def _import_dict(self, source, before=False):
         for function_name in self.chains:
             if function_name in source:

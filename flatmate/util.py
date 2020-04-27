@@ -15,3 +15,13 @@ def echo(func):
         print("Called: {}({})".format(func.__name__, format_args(*args, **kwargs)))
         return func(*args, **kwargs)
     return wrap
+
+def repr_attrs(x, attrs=None):
+    results = []
+    for attr in (attrs or dir(x)):
+        if attr.startswith('_'):
+            continue
+        value = getattr(x, attr)
+        if not callable(value):
+            results.append("{}={}".format(attr, repr(value)))
+    return "{}(\n{})".format(type(x).__name__, ', \n    '.join(results))
