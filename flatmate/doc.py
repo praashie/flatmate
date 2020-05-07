@@ -1,3 +1,5 @@
+# https://github.com/praashie/flatmate
+
 """Generate documentation of the FL Python environment"""
 
 import sys

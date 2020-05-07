@@ -1,14 +1,12 @@
+# https://github.com/praashie/flatmate
+
 """Manage entry points for FL Studio MIDI Scripts
 
 Hooker makes it possible to merge multiple scripts together,
 and hopefully encourages users to develop modular snippets.
 
-
 Setup in a script module:
-    from flatmate import Hooker
-
-    Hooker.setVerbose()
-    Hooker.install(globals())
+    >>> from flatmate.hooker import *
 
 """
 

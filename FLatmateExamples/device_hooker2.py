@@ -1,5 +1,5 @@
 # name=FLatmate Hooker Example 2
-# url=
+# url=https://github.com/praashie/flatmate
 
 from flatmate.hooker import *
 from flatmate import snippets

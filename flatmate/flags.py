@@ -1,3 +1,5 @@
+# https://github.com/praashie/flatmate
+
 import midi
 
 FLAG_PREFIXES = ['PME', 'TLC', 'HW_Dirty', 'UF', 'GT']
