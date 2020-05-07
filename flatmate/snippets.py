@@ -1,3 +1,5 @@
+# https://github.com/praashie/flatmate
+
 import device
 from . import util
 from . import flags
@@ -22,16 +24,19 @@ def Void(event):
     event.handled = True
 
 def EventDump(s='', attrs=None):
+    """Create a named dumper for FL event data"""
     def _EventDump(event):
         print("{}: {}".format(s, util.repr_attrs(event, attrs=attrs)))
         print("pmeFlags: " + flags.PME(event.pmeFlags))
     return _EventDump
 
 class OnRefreshDump:
+    """Print flags activated from OnRefresh"""
     def OnRefresh(refresh_flags):
         print("OnRefresh({})".format(flags.HW_Dirty(refresh_flags)))
 
 def GenericDump(name="GenericDump"):
+    """Create a dumper that prints any arguments it receives"""
     def _dumper(*args, **kwargs):
         print("{}({})".format(name, util.format_args(*args, **kwargs)))
     return _dumper

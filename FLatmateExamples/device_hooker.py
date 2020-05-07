@@ -1,5 +1,6 @@
 # name=FLatmate Hooker Example
-# url=
+# url=https://github.com/praashie/flatmate
+
 
 from flatmate import Hooker
 Hooker.setVerbose()

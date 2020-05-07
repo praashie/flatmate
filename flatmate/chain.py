@@ -1,3 +1,5 @@
+# https://github.com/praashie/flatmate
+
 from . import util
 
 class Chain:
