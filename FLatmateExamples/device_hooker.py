@@ -1,8 +1,7 @@
 # name=FLatmate Hooker Example
-# url=https://github.com/praashie/flatmate
+# url=https://forum.image-line.com/viewtopic.php?f=1994&t=227405
 
-
-from flatmate import Hooker
+from flatmate.hooker import Hooker
 Hooker.setVerbose()
 
 last_event = None

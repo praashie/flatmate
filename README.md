@@ -4,6 +4,8 @@ FL Studio 20.7 Beta introduced MIDI scripting capabilities. FLatmate is a small 
 
 FLatmate is currently under development without a stable API. All suggestions and comments are welcome!
 
+[Image-Line forum thread](https://forum.image-line.com/viewtopic.php?f=1994&t=227405)
+
 ## Features
 
 * Combine MIDI scripts and individual snippets together in a modular fashion
@@ -24,4 +26,3 @@ FLatmate is currently under development without a stable API. All suggestions an
 * Method for importing device scripts from other folders under `../Settings/Hardware/`, by modifying  `sys.path`
 * More features
 * Cleaner ZIP downloads?
-

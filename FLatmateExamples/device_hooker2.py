@@ -1,5 +1,5 @@
 # name=FLatmate Hooker Example 2
-# url=https://github.com/praashie/flatmate
+# url=https://forum.image-line.com/viewtopic.php?f=1994&t=227405
 
 from flatmate.hooker import *
 from flatmate import snippets
