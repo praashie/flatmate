@@ -37,6 +37,9 @@ class RECEvent:
     def setIncrement(self, value, flags=midi.REC_MIDIController, speed=0):
         return mixer.automateEvent(self.id, 1, flags, speed, 1, value)
 
+    def __int__(self):
+        return self.id
+
 class MixerEvent(RECEvent):
     def __init__(self, track, n):
         self.track = track
