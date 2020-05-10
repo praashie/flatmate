@@ -18,6 +18,10 @@ FLatmate is currently under development without a stable API. All suggestions an
 
 *  Copy `FLatmateExamples/` under `[FL Userdata folder]/FL Studio/Settings/Hardware/`
 
+## Usage
+
+[See the wiki.](https://github.com/praashie/flatmate/wiki)
+
 ## To Do
 
 * Wiki
