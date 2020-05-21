@@ -21,13 +21,15 @@ class TranslateCCBase:
         self.cc_target = cc_target
         self.clone = clone
 
-    def OnControlChange(self, event):
+    def OnMidiIn(self, event):
         if event.controlNum == self.cc_source:
+            event.data1 = self.cc_target
+            device.processMIDICC(event)
             if self.clone:
-                device.processMIDICC(event)
-            event.controlNum = self.cc_target
-
-            event.handled = True
+                event.data1 = self.cc_source
+                event.handled = False
+            else:
+                event.handled = True
 
 def void(event):
     """Mark event as handled without action"""

@@ -18,6 +18,9 @@ class RECEvent:
         """Get the name of the target control"""
         return mixer.getEventIDName(self.id, shortName)
 
+    def getSplitName(self):
+        return self.getName().partition(' - ')
+
     def getFloat(self, max=1.0, min=0.0):
         """Get the current value as a float between a range (default 0-1)"""
         return device.getLinkedValue(self.id)*(max-min) + min
@@ -63,4 +66,4 @@ class MixerEvent(RECEvent):
 
     @property
     def id(self):
-        return mixer.getTrackPluginId(self.track, 0) + midi.REC_Mixer_Send_Last + self.n
+        return mixer.getTrackPluginId(self.track, 0) + self.n
