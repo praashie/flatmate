@@ -4,5 +4,5 @@ Author: Praash
 GitHub: https://github.com/praashie/flatmate
 """
 
-version_string = "0.1.2"
+version_string = "0.2.0"
 __version__ = tuple(version_string.split('.'))
