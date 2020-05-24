@@ -12,7 +12,7 @@ RELEASE_FLAGS=--user $(USER) --repo $(REPO) --tag $(CURRENT_TAG)
 release: $(TARGET_ZIP)
 	git push --tags
 	github-release release $(RELEASE_FLAGS)
-	github-release upload $(RELEASE_FLAGS) --file $(TARGET_ZIP)
+	github-release upload $(RELEASE_FLAGS) --file $(TARGET_ZIP) --name $(TARGET_ZIP)
 
 $(TARGET_ZIP): $(SOURCES)
 	mkdir -p $(ARTIFACTS)
