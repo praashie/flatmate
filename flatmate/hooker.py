@@ -56,6 +56,14 @@ class HookerBase:
             return self.chains[attr]
         raise AttributeError
 
+    def startProfiling(self):
+        for chain in self.chains.values():
+            chain.startProfiling()
+
+    def printProfiling(self):
+        for chain in self.chains.values():
+            print(chain.profiler)
+
 _chains = [
     'OnInit', 'OnDeInit', 'OnIdle', 'OnRefresh', 'OnDoFullRefresh',
     'OnUpdateBeatIndicator', 'OnDisplayZone', 'OnUpdateLiveMode',

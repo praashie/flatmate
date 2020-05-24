@@ -1,6 +1,7 @@
 # https://github.com/praashie/flatmate
 
 from . import util
+from .profiling import Profiler
 
 class Chain:
     """Container for chaining functions together
@@ -30,10 +31,14 @@ class Chain:
         self.stop_function = stop_function
         self.last_result = None
         self.verbose = False
+        self.profiler = None
 
         self.__name__ = Chain.__name__
 
     def __call__(self, *args, **kwargs):
+        if self.profiler is not None:
+            self.profiler.start()
+
         if self.verbose:
             print("{}({})".format(self.__name__, util.format_args(*args, **kwargs)))
 
@@ -41,6 +46,10 @@ class Chain:
             self.last_result = f(*args, **kwargs)
             if self.stop_function and self.stop_function(self.last_result, *args, **kwargs):
                 break
+
+        if self.profiler is not None:
+            self.profiler.stop()
+
         return self.last_result
 
     def attach(self, *funcs, before=False):
@@ -55,6 +64,12 @@ class Chain:
         else:
             self.callbacks.extend(funcs)
         return self
+
+    def startProfiling(self):
+        if not self.profiler:
+            self.profiler = Profiler(self.__name__)
+        else:
+            self.profiler.reset()
 
 def eventHandled(_, event):
     return event.handled
