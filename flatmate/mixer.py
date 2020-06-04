@@ -21,9 +21,17 @@ class MixerTrack:
     def __init__(self, index):
         self.index = index
 
-        self.volume = MixerEvent(index, midi.REC_Mixer_Vol, default=0.8)
-        self.pan = PanEvent(index, midi.REC_Mixer_Pan, default=0.5)
-        self.stereoSeparation = MixerEvent(index, midi.REC_Mixer_SS, default=0.5)
+    @property
+    def volume(self):
+        return MixerEvent(self.index, midi.REC_Mixer_Vol, default=0.8)
+
+    @property
+    def pan(self):
+        return PanEvent(self.index, midi.REC_Mixer_Pan, default=0.5)
+
+    @property
+    def stereoSeparation(self):
+        return MixerEvent(self.index, midi.REC_Mixer_SS, default=0.5)
 
     def getName(self):
         return mixer.getTrackName(self.index)

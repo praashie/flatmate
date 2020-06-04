@@ -9,3 +9,4 @@ def sendMessage(message_bytes):
 
 def setEventMidiChannel(event, channel):
     event.midiChanEx = (event.midiChanEx - (event.midiChanEx & 0x0F)) + channel
+    event.midiChan = channel

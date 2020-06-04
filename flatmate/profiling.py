@@ -48,7 +48,7 @@ class Profiler:
             self._running_mean = new_mean
 
     def __str__(self):
-        return '{:<20}: max: {}, mean: {}, variance: {}, total: {}'.format(self.name,
+        return '{:<21}: max: {}, mean: {}, variance: {}, total: {}'.format(self.name,
             self.format_timedelta(self.max),
             self.format_timedelta(self.mean()),
             self.format_timedelta(self.variance()),
@@ -60,4 +60,4 @@ class Profiler:
                 break
             t = t * 1000.0
 
-        return '{:.1f} {}s'.format(t, prefix)
+        return '{:>5.1f} {}s'.format(t, prefix)

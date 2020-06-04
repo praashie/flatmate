@@ -36,7 +36,7 @@ class MidiLCD:
         self.buffer[row] = text
 
         t = time()
-        if force or self.minInterval is None or (t - self.last_message_time) > self.minInterval:
+        if self.minInterval is None or (t - self.last_message_time) > self.minInterval:
             text_bytes = text.encode("ascii", errors="ignore")
             device.midiOutSysex(self.sysex_prefix + text_bytes)
             self.last_message_time = t
@@ -64,7 +64,7 @@ class MidiLCD:
 
     def redraw(self):
         for i, line in enumerate(self.buffer):
-            self.write(line, row=i)
+            self.write(line, row=i, force=True)
 
     def OnIdle(self):
         if self.temp_message_time is not None:

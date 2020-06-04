@@ -4,6 +4,7 @@ import device
 import midi
 
 from .event import RECEvent
+from .hooker import Hooker
 
 DEFAULT_PORT = device.getPortNumber()
 
@@ -27,6 +28,8 @@ class MIDIControl:
 
         for attr, value in kwargs.items():
             setattr(self, attr, value)
+
+        Hooker.include(self)
 
     def set_callback(self, callback):
         """Set callback to be called when the control is moved.
