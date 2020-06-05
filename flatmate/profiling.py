@@ -1,5 +1,6 @@
 # https://github.com/praashie/flatmate
 from time import time
+import math
 
 # Calculating a running average and variance:
 # https://www.johndcook.com/blog/standard_deviation/
@@ -36,6 +37,9 @@ class Profiler:
             return self._running_variance / (self._sample_count - 1)
         return 0.0
 
+    def sd(self):
+        return math.sqrt(self.variance())
+
     def _append(self, x):
         self.total += x
         self.max = max(self.max, x)
@@ -48,10 +52,10 @@ class Profiler:
             self._running_mean = new_mean
 
     def __str__(self):
-        return '{:<21}: max: {}, mean: {}, variance: {}, total: {}'.format(self.name,
+        return '{:<21}: max: {}, mean: {}, st.dev: {}, total: {}'.format(self.name,
             self.format_timedelta(self.max),
             self.format_timedelta(self.mean()),
-            self.format_timedelta(self.variance()),
+            self.format_timedelta(self.sd()),
             self.format_timedelta(self.total))
 
     def format_timedelta(self, t):
