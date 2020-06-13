@@ -1,9 +1,26 @@
 # https://github.com/praashie/flatmate
 
+import time
+
 import midi
 import channels
 import mixer
 import device
+
+AUTOMATE_DEFAULT_FLAGS = midi.REC_Smoothed | midi.REC_UpdateValue | midi.REC_UpdateControl | midi.REC_SetChanged | midi.REC_FromMIDI
+
+AUTOMATE_THROTTLING = False
+AUTOMATE_THROTTLING_INTERVAL = 0.02
+
+throttling_times = {}
+
+def _automate(recid, *args):
+    if AUTOMATE_THROTTLING:
+        t = time.time()
+        if (t - throttling_times.get(recid, 0)) < AUTOMATE_THROTTLING_INTERVAL:
+            return
+        throttling_times[recid] = t
+    return mixer.automateEvent(recid, *args)
 
 class RECEvent:
     """Wrapper for easily controlling FL Studio REC events.
@@ -14,6 +31,8 @@ class RECEvent:
     def __init__(self, _id=0, default=0.0):
         self.id = _id
         self.value_default = 0.0
+
+        self.last_automation_time = None
 
     def getName(self, shortName=False):
         """Get the name of the target control"""
@@ -45,9 +64,9 @@ class RECEvent:
         """Return True if the target control is bipolar (panning etc.)"""
         return bool(self.getInfoFlags() & midi.Event_Centered)
 
-    def setRaw(self, value, flags=midi.REC_MIDIController):
+    def setRaw(self, value, flags=AUTOMATE_DEFAULT_FLAGS):
         """Set the current value as a raw integer between 0-65536"""
-        return mixer.automateEvent(self.id, value, flags)
+        return _automate(self.id, value, flags)
 
     def setValue(self, value, max=1.0, min=0.0):
         """Set the current value as a float between a range (default 0-1)"""
@@ -56,12 +75,12 @@ class RECEvent:
     def resetValue(self):
         self.setValue(self.value_default)
 
-    def setIncrement(self, value, flags=midi.REC_MIDIController, speed=0):
+    def setIncrement(self, value, flags=AUTOMATE_DEFAULT_FLAGS, speed=0):
         """Increment the current value with a relative float between (0-1)"""
-        return mixer.automateEvent(self.id, 1, flags, speed, 1, value)
+        return _automate(self.id, 1, flags, speed, 1, value)
 
     def touch(self):
-        mixer.automateEvent(self.id, 0, midi.REC_SetTouched)
+        return _automate(self.id, 0, midi.REC_SetTouched)
 
     def __int__(self):
         return self.id
