@@ -1,9 +1,18 @@
 # https://github.com/praashie/flatmate
-from time import time
 import math
+import sys
+from time import time
 
 # Calculating a running average and variance:
 # https://www.johndcook.com/blog/standard_deviation/
+
+def format_timedelta(t):
+    for prefix in (' ', 'm', 'μ', 'n'):
+        if t >= 1.0:
+            break
+        t = t * 1000.0
+
+    return '{:>5.1f} {}s'.format(t, prefix)
 
 class Profiler:
     def __init__(self, name=''):
@@ -53,15 +62,53 @@ class Profiler:
 
     def __str__(self):
         return '{:<21}: max: {}, mean: {}, st.dev: {}, total: {}'.format(self.name,
-            self.format_timedelta(self.max),
-            self.format_timedelta(self.mean()),
-            self.format_timedelta(self.sd()),
-            self.format_timedelta(self.total))
+            format_timedelta(self.max),
+            format_timedelta(self.mean()),
+            format_timedelta(self.sd()),
+            format_timedelta(self.total))
 
-    def format_timedelta(self, t):
-        for prefix in ('', 'm', 'μ', 'n'):
-            if t >= 1.0:
-                break
-            t = t * 1000.0
+class SysProfiler:
+    def __init__(self):
+        self.stats = {}
 
-        return '{:>5.1f} {}s'.format(t, prefix)
+    def activate(self):
+        sys.setprofile(self._profile)
+
+    def deactivate(self):
+        sys.setprofile(None)
+
+    def _profile(self, frame, event, arg):
+        fcode = frame.f_code
+        fn = (fcode.co_filename, fcode.co_firstlineno, fcode.co_name)
+        if not fn in self.stats:
+            self.stats[fn] = Profiler(fcode.co_name)
+
+        if event in ('call', 'c_call'):
+            self.stats[fn].start()
+        elif event in ('return', 'c_return'):
+            self.stats[fn].stop()
+
+    def print(self, sortkey="total"):
+        frozen_stats = []
+        for fn, profiler in self.stats.items():
+            filename, lineno, fname = fn
+            display_name = "{}:{}:{}".format(filename, lineno, fname)
+            stat = {
+                "name": display_name,
+                "max": profiler.max,
+                "mean": profiler.mean(),
+                "sd": profiler.sd(),
+                "total": profiler.total
+            }
+            frozen_stats.append(stat)
+
+        frozen_stats.sort(key=lambda s: s[sortkey], reverse=True)
+
+        fields = ("total", "max", "mean", "sd")
+
+        print()
+        print(("{:8} " * 5).format(*fields, "name"))
+        for i, stat in zip(range(100), frozen_stats):
+            line = " ".join([format_timedelta(stat[key]) for key in fields])
+            line += " " + stat["name"]
+            print(line)
