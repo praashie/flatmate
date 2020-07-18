@@ -1,8 +1,13 @@
 import midi
 import mixer
+import utils
+
 from .event import RECEvent, MixerEvent
 
-class PanEvent(MixerEvent):
+class MixerPanEvent(MixerEvent):
+    def __init__(self, track):
+        super().__init__(track, midi.REC_Mixer_Pan, default=0.5)
+
     def getValueString(self):
         value = self.getFloat(min=-1.0, max=1.0)
 
@@ -17,17 +22,27 @@ class PanEvent(MixerEvent):
         else:
             return "{}% L".format(int(-value*100))
 
+class MixerVolumeEvent(MixerEvent):
+    def __init__(self, track):
+        super().__init__(track, midi.REC_Mixer_Vol, default=0.8)
+
+    def getValueString(self):
+        x = self.getFloat(max=1.25)
+        if x == 0:
+            return '-INF dB'
+        return '{} dB'.format(utils.VolTodB(x))
+
 class MixerTrack:
     def __init__(self, index):
         self.index = index
 
     @property
     def volume(self):
-        return MixerEvent(self.index, midi.REC_Mixer_Vol, default=0.8)
+        return MixerVolumeEvent(self.index)
 
     @property
     def pan(self):
-        return PanEvent(self.index, midi.REC_Mixer_Pan, default=0.5)
+        return MixerPanEvent(self.index)
 
     @property
     def stereoSeparation(self):

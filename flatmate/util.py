@@ -1,7 +1,28 @@
 # https://github.com/praashie/flatmate
 
+from time import time
+
 class Empty:
     pass
+
+class Timer:
+    def __init__(self, timeout):
+        self.timeout = timeout
+        self.last_time = None
+
+    def ready(self):
+        if self.last_time is None:
+            return
+        t = time()
+        if (t - self.last_time) >= self.timeout:
+            return True
+
+    def start(self):
+        self.last_time = time()
+
+    def stop(self):
+        self.last_time = None
+
 
 def format_args(*args, **kwargs):
     args_repr = [repr(x) for x in args]

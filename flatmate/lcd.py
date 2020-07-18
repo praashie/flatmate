@@ -1,7 +1,7 @@
 import device
-from time import time
 
 from .hooker import Hooker
+from .util import Timer
 
 def safe_getitem(container, index):
     if index < len(container):
@@ -14,48 +14,36 @@ class MidiLCD:
         self.width = width
         self.height = height
 
-        self.temp_message_duration = 2
-        self.temp_message_time = 0
-        self.last_message_time = 0
+        self.temp_message_timer = Timer(2)
+        self.last_message_timer = Timer(minInterval)
+        self.last_message_timer.start()
 
-        self.minInterval = minInterval
         self.pending_redraw = False
 
         self.buffer = [""] * height
-        self.parts_buffer = ([("",)]) * height
 
         Hooker.include(self)
 
-    def write(self, text, row=0, temporary=False, align='', force=False):
-        if align:
-            text = '{t:{a}{w}}'.format(t=text, a=align, w=self.width)
+    def write(self, text, row=0, temporary=False, align=''):
+        if not temporary:
+            self.buffer[row] = text
+        else:
+            self.temp_message_timer.start()
 
-        if text == self.buffer[row] and not force:
-            return
-
-        self.buffer[row] = text
-
-        t = time()
-        if self.minInterval is None or (t - self.last_message_time) > self.minInterval:
-            text_bytes = text.encode("ascii", errors="ignore")
-            device.midiOutSysex(self.sysex_prefix + text_bytes)
-            self.last_message_time = t
-            self.pending_redraw = False
+        if self.last_message_timer.ready():
+            self._write(text, row, align)
+            self.last_message_timer.start()
         else:
             self.pending_redraw = True
 
-    def writeParts(self, text_parts, row=0, temporary=False, **kwargs):
-        diff_parts = self.getBufferDifference(text_parts, row)
-        if diff_parts is None:
-            return
+    def _write(self, text, row=0, align=''):
+        text = '{t:{a}{w}}'.format(t=text, a=align, w=self.width)
+        self._send_bytes(text, row)
 
-        if not temporary:
-            self.parts_buffer[row] = text_parts
-        else:
-            self.temp_message_time = time()
-
-        text = ''.join(diff_parts)
-        self.write(text, row=row, **kwargs)
+    def _send_bytes(self, text, row=0):
+        text_bytes = text.encode("ascii", errors="ignore")
+        device.midiOutSysex(self.sysex_prefix + text_bytes)
+        self.pending_redraw = False
 
     def clear(self):
         for i in range(self.height):
@@ -64,20 +52,30 @@ class MidiLCD:
 
     def redraw(self):
         for i, line in enumerate(self.buffer):
-            self.write(line, row=i, force=True)
+            self._write(line, row=i)
 
     def OnIdle(self):
-        if self.temp_message_time is not None:
-            t = time()
-            if (t - self.temp_message_time) >= self.temp_message_duration:
-                self.temp_message_time = None
-                self.pending_redraw = True
-        if self.pending_redraw:
+        if self.temp_message_timer.ready():
+            self.temp_message_timer.stop()
+            self.pending_redraw = True
+        if self.pending_redraw and self.last_message_timer.ready():
             self.redraw()
+            self.last_message_timer.start()
+
+    def isReady(self):
+        return self.last_message_timer.ready()
+
+class MidiLCDParts(MidiLCD):
+    def __init__(self, *args, part_interval=1, **kwargs):
+        self.part_refresh_timer = Timer(part_interval)
+        self.part_refresh_timer.start()
+
+        super().__init__(*args, **kwargs)
+        self.final_buffer = ([("",)]) * self.height
 
     def getBufferDifference(self, text_parts, row=0):
         differing_parts = None
-        buffer_row = self.parts_buffer[row]
+        buffer_row = self.final_buffer[row]
 
         for i in range(max(len(text_parts), len(buffer_row))):
             part_buffer = safe_getitem(buffer_row, i)
@@ -89,3 +87,25 @@ class MidiLCD:
                     return text_parts # 2 or more differing parts
 
         return differing_parts
+
+    def _write(self, text_parts, row=0, temporary=False):
+        diff_parts = self.getBufferDifference(text_parts, row)
+
+        if diff_parts == text_parts:
+            self.part_refresh_timer.start()
+        elif self.part_refresh_timer.ready():
+            if diff_parts is None:
+                return
+        else:
+            diff_parts = text_parts
+
+        self.final_buffer[row] = text_parts
+        text = ''.join(diff_parts)
+        self._send_bytes(text, row=row)
+
+    def write(self, text, *args, **kwargs):
+        text = (text,)
+        super().write(text, *args, **kwargs)
+
+    def writeParts(self, text_parts, *args, **kwargs):
+        super().write(text_parts, *args, **kwargs)

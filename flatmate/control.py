@@ -5,12 +5,13 @@ import midi
 
 from .event import RECEvent
 from .hooker import Hooker
+from .util import Timer
 
 DEFAULT_PORT = device.getPortNumber()
 
 class MIDIControl:
     def __init__(self, channel, ccNumber, port=DEFAULT_PORT, name='',
-            throttling=False, **kwargs):
+            throttling=False, lazy_feedback=False, **kwargs):
         """Manage a MIDI CC controller as an object.
         Args:
             throttling: When True, feedback is delayed until OnIdle()
@@ -25,6 +26,8 @@ class MIDIControl:
         self.verbose = False
         self.throttling = throttling
         self.pending_feedback_value = None
+        self.last_feedback_value = None
+        self.lazy_feedback = lazy_feedback
 
         for attr, value in kwargs.items():
             setattr(self, attr, value)
@@ -71,13 +74,16 @@ class MIDIControl:
 
     def sendFeedback(self, value):
         """Send a CC value back to this control"""
-        if self.throttling:
+        if self.lazy_feedback and value == self.last_feedback_value:
+            return
+        elif self.throttling:
             self.pending_feedback_value = value
         else:
             self._feedback(value)
 
     def _feedback(self, value):
         device.midiOutMsg((0xB0 + self.channel) + (self.ccNumber << 8) + (value << 16))
+        self.last_feedback_value = value
 
     def OnIdle(self):
         if self.pending_feedback_value is not None:
@@ -86,3 +92,23 @@ class MIDIControl:
 
     # Available as a decorator!
     __call__ = set_callback
+
+class MIDIButton(MIDIControl):
+    _real_previous = 0
+    double_click = False
+
+    def __init__(self, *args, double_timeout=0.3, **kwargs):
+        self.timer = Timer(double_timeout)
+        self.timer.start()
+        super().__init__(*args, **kwargs)
+
+    def updateValueFromEvent(self, event):
+        self.value = event.controlVal
+        high_edge = (self.value > self._real_previous)
+        self._real_previous = self.value
+        self.double_click = False
+        if high_edge:
+            if not self.timer.ready():
+                self.double_click = True
+            else:
+                self.timer.start()
