@@ -9,6 +9,8 @@ import device
 
 from .hooker import Hooker
 
+FL_MAX_VALUE = midi.MaxInt / 2
+
 AUTOMATE_DEFAULT_FLAGS = midi.REC_Smoothed | midi.REC_UpdateValue | midi.REC_UpdateControl | midi.REC_SetChanged | midi.REC_FromMIDI
 AUTOMATE_DEFAULT_SPEED = 50
 
@@ -87,7 +89,7 @@ class RECEvent:
 
     def setValue(self, value, max=1.0, min=0.0):
         """Set the current value as a float between a range (default 0-1)"""
-        return self.setRaw(int(65536*(value-min)/(max-min)))
+        return self.setRaw(int(FL_MAX_VALUE*(value-min)/(max-min)))
 
     def resetValue(self):
         self.setValue(self.value_default)
